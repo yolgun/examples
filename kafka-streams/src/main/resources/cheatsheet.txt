@@ -1,3 +1,11 @@
+sudo nohup zookeeper-server-start /etc/kafka/zookeeper.properties >zookeeper.log 2>&1 &
+sudo nohup kafka-server-start /etc/kafka/server.properties >kafka.log 2>&1 &
+sudo nohup schema-registry-start /etc/schema-registry/schema-registry.properties >schema.log 2>&1 &
+
+sudo kafka-server-stop
+sudo zookeeper-server-stop
+sudo schema-registry-stop
+
 kafka-avro-console-producer --broker-list localhost:9092 --topic read \
 	--property parse.key=true \
     --property key.separator=, \
@@ -5,7 +13,14 @@ kafka-avro-console-producer --broker-list localhost:9092 --topic read \
 	--property value.schema='{"type":"record","name":"UserGameScoreValue","namespace":"com.bytro.firefly.avro","fields":[{"name":"userID","type":"int"},{"name":"gameID","type":"int"},{"name":"scoreType","type":"string"},{"name":"scoreValue","type":"int"}],"doc:":"A basic schema for storing user-game-score values"}'
 
 {"userID":1},{"userID":1,"gameID":12,"scoreType":"myType","scoreValue":123}
-{"userID":1},{"userID":1,"gameID":13,"scoreType":"myType","scoreValue":123}
+{"userID":1},{"userID":1,"gameID":12,"scoreType":"myType","scoreValue":123}
+{"userID":1},{"userID":1,"gameID":12,"scoreType":"myType","scoreValue":123}
+{"userID":1},{"userID":1,"gameID":12,"scoreType":"myType","scoreValue":123}
+{"userID":1},{"userID":1,"gameID":12,"scoreType":"myType","scoreValue":123}
+{"userID":1},{"userID":1,"gameID":12,"scoreType":"myType","scoreValue":123}
+{"userID":1},{"userID":1,"gameID":12,"scoreType":"myType","scoreValue":123}
+{"userID":1},{"userID":1,"gameID":12,"scoreType":"myType","scoreValue":123}
+{"userID":1},{"userID":1,"gameID":12,"scoreType":"myType","scoreValue":123}
 {"userID":2},{"userID":2,"gameID":12,"scoreType":"yourType","scoreValue":600}
 
 
@@ -16,7 +31,12 @@ kafka-avro-console-consumer --bootstrap-server localhost:9092 --topic read \
 	--property key.separator=, \
 	--from-beginning
 
-kafka-streams-application-reset --application-id wordcount-lambda-example \
+kafka-streams-application-reset --application-id firefly2 \
                                       --input-topics read \
-                                      --bootstrap-servers 192.168.33.10:9092 \
-                                      --zookeeper 192.168.33.10:2181
+									  --intermediate-topics userScoreAcc,userGameScoreAcc,UserAcc \
+                                      --bootstrap-servers 192.168.101.10:9092 \
+                                      --zookeeper 192.168.101.10:2181
+
+sudo connect-standalone worker.properties connect.properties
+sudo connect-standalone worker.properties connect-redis.properties
+

@@ -1,5 +1,6 @@
 package com.bytro.firefly;
 
+import com.bytro.firefly.rest.RestService;
 import org.apache.kafka.streams.KafkaStreams;
 
 /**
@@ -22,7 +23,7 @@ public class Launcher {
 
     private void startRest(KafkaStreams streams) {
         try {
-            new Rester(streams).launch(8082);
+            new RestService(streams).launch(8082);
         } catch (Exception e) {
             e.printStackTrace();
         }

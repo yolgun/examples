@@ -113,14 +113,15 @@ public abstract class Streamer {
 
     private Properties createProperties() {
         final Properties streamsConfiguration = new Properties();
+        final String HOSTNAME= "192.168.101.10";
         // Give the Streams application a unique name.  The name must be unique in the Kafka cluster
         // against which the application is run.
-        streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "firefly");
+        streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "firefly3");
         streamsConfiguration.put(StreamsConfig.CLIENT_ID_CONFIG, "1");
         // Where to find Kafka broker(s).
-        streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.33.10:9092");
+        streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, HOSTNAME + ":9092");
         // Where to find the corresponding ZooKeeper ensemble.
-        streamsConfiguration.put(StreamsConfig.ZOOKEEPER_CONNECT_CONFIG, "192.168.33.10:2181");
+        streamsConfiguration.put(StreamsConfig.ZOOKEEPER_CONNECT_CONFIG, HOSTNAME + ":2181");
         // Specify default (de)serializers for record keys and for record values.
         streamsConfiguration.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
         streamsConfiguration.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
@@ -130,7 +131,7 @@ public abstract class Streamer {
         streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 10 * 1000);
         streamsConfiguration.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        streamsConfiguration.put("schema.registry.url", "http://192.168.33.10:8081");
+        streamsConfiguration.put("schema.registry.url", "http://" + HOSTNAME + ":8081");
         return streamsConfiguration;
     }
 
