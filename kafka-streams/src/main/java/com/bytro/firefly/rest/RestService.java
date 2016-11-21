@@ -1,19 +1,5 @@
 package com.bytro.firefly.rest;
 
-/**
- * Copyright 2016 Confluent Inc.
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
- */
-
 import com.bytro.firefly.avro.ScoreValue;
 import com.bytro.firefly.avro.User;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -43,21 +29,14 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- *  A simple REST proxy that runs embedded in the . This is used to
- *  demonstrate how a developer can use the Interactive Queries APIs exposed by Kafka Streams to
+ *  A simple REST proxy that runs embedded. This is used to
  *  locate and query the State Stores within a Kafka Streams Application.
  */
 @Path("state")
 public class RestService {
-
-    private final KafkaStreams streams;
-    private final MetadataService metadataService;
+    private KafkaStreams stream;
+    private MetadataService metadataService;
     private Server jettyServer;
-
-    public RestService(final KafkaStreams streams) {
-        this.streams = streams;
-        this.metadataService = new MetadataService(streams);
-    }
 
     @GET()
     public String root() {
@@ -77,7 +56,7 @@ public class RestService {
                               @PathParam("key") final int key) {
 
         // Lookup the KeyValueStore with the provided storeName
-        final ReadOnlyKeyValueStore<User, ScoreValue> store = streams.store(storeName, QueryableStoreTypes.<User, ScoreValue>keyValueStore());
+        final ReadOnlyKeyValueStore<User, ScoreValue> store = stream.store(storeName, QueryableStoreTypes.<User, ScoreValue>keyValueStore());
         if (store == null) {
             throw new NotFoundException();
         }
@@ -115,7 +94,7 @@ public class RestService {
                                                              KeyValueIterator<String, Long>> rangeFunction) {
 
         // Get the KeyValue Store
-        final ReadOnlyKeyValueStore<String, Long> store = streams.store(storeName, QueryableStoreTypes.keyValueStore());
+        final ReadOnlyKeyValueStore<String, Long> store = stream.store(storeName, QueryableStoreTypes.keyValueStore());
         if (store == null) {
             throw new NotFoundException();
         }
@@ -169,7 +148,7 @@ public class RestService {
                                             @PathParam("to") final Long to) {
 
         // Lookup the WindowStore with the provided storeName
-        final ReadOnlyWindowStore<String, Long> store = streams.store(storeName,
+        final ReadOnlyWindowStore<String, Long> store = stream.store(storeName,
                 QueryableStoreTypes.<String, Long>windowStore());
         if (store == null) {
             throw new NotFoundException();
@@ -231,7 +210,10 @@ public class RestService {
      * @param port    port to run the Server on
      * @throws Exception
      */
-    public void launch(final int port) throws Exception {
+    public void start(KafkaStreams stream, final int port) {
+        this.stream = stream;
+        this.metadataService = new MetadataService(this.stream);
+
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
 
@@ -246,16 +228,28 @@ public class RestService {
         ServletHolder holder = new ServletHolder(sc);
         context.addServlet(holder, "/*");
 
-        jettyServer.start();
+        startJetty();
+    }
+
+    private void startJetty() {
+        try {
+            jettyServer.start();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * Stop the Jetty Server
      * @throws Exception
      */
-    void stop() throws Exception {
-        if (jettyServer != null) {
-            jettyServer.stop();
+    public void stop() {
+        try {
+            if (jettyServer != null) {
+                jettyServer.stop();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

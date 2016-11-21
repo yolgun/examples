@@ -1,4 +1,4 @@
-package com.bytro.firefly;
+package com.bytro.firefly.stream;
 
 import com.bytro.firefly.avro.ScoreValue;
 import com.bytro.firefly.avro.User;
@@ -19,7 +19,7 @@ import org.redisson.config.Config;
 /**
  * Created by yoldeta on 2016-11-21.
  */
-public class StreamerImpl extends Streamer {
+public class StreamServiceImpl extends StreamService {
 	@Override
 	protected TopologyBuilder createBuilder() {
 		final KStreamBuilder builder = new KStreamBuilder();
@@ -45,7 +45,7 @@ public class StreamerImpl extends Streamer {
 				   .print();
 
 		reducedUser.to("UserRanking_v2");
-		reducedUser.process(() -> new RedisProcessor());
+		reducedUser.process(() -> new RedisProcessorNoop());
 
 
 		return builder;

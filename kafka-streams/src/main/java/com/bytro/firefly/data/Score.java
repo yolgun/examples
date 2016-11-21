@@ -1,7 +1,5 @@
 package com.bytro.firefly.data;
 
-import com.bytro.firefly.Streamer;
-
 /**
  * Created by yoldeta on 2016-11-20.
  */

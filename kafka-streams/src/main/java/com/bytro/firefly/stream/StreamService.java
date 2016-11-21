@@ -1,6 +1,4 @@
-package com.bytro.firefly; /**
- * Created by yoldeta on 2016-11-20.
- */
+package com.bytro.firefly.stream;
 
 import com.bytro.firefly.avro.Award;
 import com.bytro.firefly.avro.ScoreValue;
@@ -95,25 +93,25 @@ import java.util.Properties;
  * 6) Once you're done with your experiments, you can stop this example via {@code Ctrl-C}. If needed,
  * also stop the Kafka broker ({@code Ctrl-C}), and only then stop the ZooKeeper instance (`{@code Ctrl-C}).
  */
-public abstract class Streamer {
+public abstract class StreamService {
 
-    protected static <K1, V1> Iterable<KeyValue<K1, V1>> awardTo(User key, ScoreValue value) {
+    private KafkaStreams streams;
+
+    static <K1, V1> Iterable<KeyValue<K1, V1>> awardTo(User key, ScoreValue value) {
         return value.getValue() < 1000
                 ? Collections.emptyList()
                 : Collections.singletonList(new KeyValue(key, new Award(">1000 AWARD")));
     }
 
-    public KafkaStreams launch() {
+    public void start() {
         Properties streamConfiguration = createProperties();
         TopologyBuilder builder = createBuilder();
-        KafkaStreams streams = startStreaming(builder, streamConfiguration);
-        addShutdownHook(streams);
-        return streams;
+        startStreaming(builder, streamConfiguration);
     }
 
     private Properties createProperties() {
         final Properties streamsConfiguration = new Properties();
-        final String HOSTNAME= "192.168.101.10";
+        final String HOSTNAME = "192.168.33.10";
         // Give the Streams application a unique name.  The name must be unique in the Kafka cluster
         // against which the application is run.
         streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "firefly3");
@@ -137,14 +135,16 @@ public abstract class Streamer {
 
     protected abstract TopologyBuilder createBuilder();
 
-    private KafkaStreams startStreaming(TopologyBuilder builder, Properties streamsConfiguration) {
-        final KafkaStreams streams = new KafkaStreams(builder, streamsConfiguration);
+    private void startStreaming(TopologyBuilder builder, Properties streamsConfiguration) {
+        streams = new KafkaStreams(builder, streamsConfiguration);
         streams.start();
-        return streams;
     }
 
-    private void addShutdownHook(KafkaStreams streams) {
-        Runtime.getRuntime()
-               .addShutdownHook(new Thread(streams::close));
+    public void stop() {
+        streams.close();
+    }
+
+    public KafkaStreams getStreams() {
+        return streams;
     }
 }
