@@ -1,5 +1,7 @@
 package com.bytro.firefly;
 
+import org.apache.kafka.streams.KafkaStreams;
+
 /**
  * Created by yoldeta on 2016-11-20.
  */
@@ -10,15 +12,19 @@ public class Launcher {
     }
 
     public void launch() {
-        startStream();
-        startRest();
+        KafkaStreams streams = startStream();
+        startRest(streams);
     }
 
-    private void startStream() {
-        new Streamer().launch();
+    private KafkaStreams startStream() {
+        return new StreamerImpl().launch();
     }
 
-    private void startRest() {
-        new Rester().launch();
+    private void startRest(KafkaStreams streams) {
+        try {
+            new Rester(streams).launch(8082);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

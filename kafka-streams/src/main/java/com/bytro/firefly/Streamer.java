@@ -2,16 +2,17 @@ package com.bytro.firefly; /**
  * Created by yoldeta on 2016-11-20.
  */
 
-import com.bytro.firefly.avro.UserGameScoreValue;
+import com.bytro.firefly.avro.Award;
+import com.bytro.firefly.avro.ScoreValue;
+import com.bytro.firefly.avro.User;
+import io.confluent.examples.streams.utils.SpecificAvroSerde;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.Serde;
-import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
+import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.KStreamBuilder;
+import org.apache.kafka.streams.processor.TopologyBuilder;
 
+import java.util.Collections;
 import java.util.Properties;
 
 /**
@@ -94,13 +95,20 @@ import java.util.Properties;
  * 6) Once you're done with your experiments, you can stop this example via {@code Ctrl-C}. If needed,
  * also stop the Kafka broker ({@code Ctrl-C}), and only then stop the ZooKeeper instance (`{@code Ctrl-C}).
  */
-public class Streamer {
+public abstract class Streamer {
 
-    public void launch() {
+    protected static <K1, V1> Iterable<KeyValue<K1, V1>> awardTo(User key, ScoreValue value) {
+        return value.getValue() < 1000
+                ? Collections.emptyList()
+                : Collections.singletonList(new KeyValue(key, new Award(">1000 AWARD")));
+    }
+
+    public KafkaStreams launch() {
         Properties streamConfiguration = createProperties();
-        KStreamBuilder builder = createBuilder();
+        TopologyBuilder builder = createBuilder();
         KafkaStreams streams = startStreaming(builder, streamConfiguration);
         addShutdownHook(streams);
+        return streams;
     }
 
     private Properties createProperties() {
@@ -108,46 +116,29 @@ public class Streamer {
         // Give the Streams application a unique name.  The name must be unique in the Kafka cluster
         // against which the application is run.
         streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "firefly");
+        streamsConfiguration.put(StreamsConfig.CLIENT_ID_CONFIG, "1");
         // Where to find Kafka broker(s).
         streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.33.10:9092");
         // Where to find the corresponding ZooKeeper ensemble.
         streamsConfiguration.put(StreamsConfig.ZOOKEEPER_CONNECT_CONFIG, "192.168.33.10:2181");
-        streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1 * 1000);
+        // Specify default (de)serializers for record keys and for record values.
+        streamsConfiguration.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
+        streamsConfiguration.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
+
+        // Records should be flushed every 10 seconds. This is less than the default
+        // in order to keep this example interactive.
+        streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 10 * 1000);
         streamsConfiguration.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
-
-        streamsConfiguration.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-        streamsConfiguration.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-
-//        streamsConfiguration.put("schema.registry.url", "http://192.168.33.10:8081");
-//
-//        streamsConfiguration.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-//                Serdes.String().getClass());
-//        streamsConfiguration.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-//                io.confluent.kafka.serializers.KafkaAvroSerializer.class);
-//
-//
-//        // Specify default (de)serializers for record keys and for record values.
-//        streamsConfiguration.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-//                Serdes.String().getClass());
-//        streamsConfiguration.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-//                io.confluent.kafka.serializers.KafkaAvroSerializer.class);
-
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        streamsConfiguration.put("schema.registry.url", "http://192.168.33.10:8081");
+
         return streamsConfiguration;
     }
 
-    private KStreamBuilder createBuilder() {
-        final Serde<String> stringSerde = Serdes.String();
-        final KStreamBuilder builder = new KStreamBuilder();
-        KStream<String, String> rawScores = builder.stream(stringSerde, stringSerde, "UserGameScoreValueTopic6");
-        rawScores.through("UserGameScoreValueTopic7")
-                 .print();
+    protected abstract TopologyBuilder createBuilder();
 
-        return builder;
-    }
-
-    private KafkaStreams startStreaming(KStreamBuilder builder, Properties streamConfiguration) {
-        KafkaStreams streams = new KafkaStreams(builder, streamConfiguration);
+    private KafkaStreams startStreaming(TopologyBuilder builder, Properties streamsConfiguration) {
+        final KafkaStreams streams = new KafkaStreams(builder, streamsConfiguration);
         streams.start();
         return streams;
     }
