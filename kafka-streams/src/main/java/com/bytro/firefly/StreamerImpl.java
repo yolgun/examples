@@ -5,6 +5,7 @@ import com.bytro.firefly.avro.User;
 import com.bytro.firefly.avro.UserGameScore;
 import com.bytro.firefly.avro.UserGameScoreValue;
 import com.bytro.firefly.avro.UserScore;
+import com.bytro.firefly.avro.UserValue;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
@@ -31,13 +32,17 @@ public class StreamerImpl extends Streamer {
                            .reduce((value1, value2) -> new ScoreValue(value1.getValue() + value2.getValue()), "userGameScoreAcc")
                            .print();
 
-        KTable<User, ScoreValue> reducedUser = userGameScoreValues.mapValues(value -> new ScoreValue(value.getScoreValue()))
-                                                                  .groupByKey()
-                                                                  .reduce((value1, value2) -> new ScoreValue(value1.getValue() + value2.getValue()), "UserAcc");
+        KStream<User, ScoreValue> reducedUser = userGameScoreValues.mapValues(value -> new ScoreValue(value.getScoreValue()))
+                                                                   .groupByKey()
+                                                                   .reduce((value1, value2) -> new ScoreValue(value1.getValue() + value2.getValue()), "UserAcc")
+                                                                   .toStream();
         reducedUser.print();
-        reducedUser.toStream()
-                   .flatMap((key, value) -> awardTo(key, value))
+        reducedUser.flatMap((key, value) -> awardTo(key, value))
                    .print();
+
+        reducedUser.map((key, value) -> new KeyValue<>(new User(1), new UserValue(key.getUserID(), value.getValue())))
+                .to("UserRanking");
+
 
         return builder;
     }

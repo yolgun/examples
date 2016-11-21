@@ -92,7 +92,7 @@ import java.util.Properties;
  */
 public class TopArticlesLambdaExample {
 
-  private static final String SCHEMA_REGISTRY_URL = "http://localhost:8081";
+  private static final String SCHEMA_REGISTRY_URL = "http://192.168.33.10:8081";
   static final String TOP_NEWS_PER_INDUSTRY_TOPIC = "TopNewsPerIndustry";
   static final String PAGE_VIEWS = "PageViews";
 
@@ -105,8 +105,8 @@ public class TopArticlesLambdaExample {
   }
 
   public static void main(final String[] args) throws Exception {
-    final KafkaStreams streams = buildTopArticlesStream("localhost:9092",
-      "localhost:2181",
+    final KafkaStreams streams = buildTopArticlesStream("192.168.33.10:9092",
+            "192.168.33.10:2181",
       SCHEMA_REGISTRY_URL,
       "/tmp/kafka-streams");
     streams.start();
@@ -227,6 +227,7 @@ public class TopArticlesLambdaExample {
         return sb.toString();
       });
 
+      topViewCounts.print();
     topViewCounts.to(windowedStringSerde, stringSerde, TOP_NEWS_PER_INDUSTRY_TOPIC);
     return new KafkaStreams(builder, streamsConfiguration);
   }

@@ -131,7 +131,6 @@ public abstract class Streamer {
         streamsConfiguration.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         streamsConfiguration.put("schema.registry.url", "http://192.168.33.10:8081");
-
         return streamsConfiguration;
     }
 

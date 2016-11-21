@@ -64,12 +64,12 @@ public class TopArticlesExampleDriver {
     final String[] pages = {"index.html", "news.html", "contact.html", "about.html", "stuff.html"};
 
     final Properties props = new Properties();
-    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.33.10:9092");
     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
         StringSerializer.class);
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
         io.confluent.kafka.serializers.KafkaAvroSerializer.class);
-    props.put("schema.registry.url", "http://localhost:8081");
+    props.put("schema.registry.url", "http://192.168.33.10:8081");
     final KafkaProducer<String, GenericRecord> producer = new KafkaProducer<>(props);
 
     final GenericRecordBuilder pageViewBuilder =
