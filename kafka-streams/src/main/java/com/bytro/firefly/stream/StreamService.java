@@ -100,7 +100,7 @@ public class StreamService {
 
     private Properties createProperties() {
         final Properties streamsConfiguration = new Properties();
-        final String HOSTNAME = "192.168.33.10";
+        final String HOSTNAME = "192.168.101.10";
         // Give the Streams application a unique name.  The name must be unique in the Kafka cluster
         // against which the application is run.
         streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "firefly4");

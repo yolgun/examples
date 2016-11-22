@@ -11,7 +11,7 @@ import org.redisson.config.Config;
  */
 public class RedisFactory {
     private static final RedisFactory instance = new RedisFactory();
-    private ConcurrentHashMap<String, RScoredSortedSet<Integer>> sets;
+    private ConcurrentHashMap<String, RScoredSortedSet<Integer>> sets = new ConcurrentHashMap<>();
     private RedissonClient client;
 
     private RedisFactory() {
