@@ -1,6 +1,6 @@
 {
   "type" : "record",
-  "name" : "ScoreValue",
+  "name" : "Value",
   "namespace" : "com.bytro.firefly.avro",
   "fields" : [{
     "name" : "value",

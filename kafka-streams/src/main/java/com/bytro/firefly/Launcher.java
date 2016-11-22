@@ -2,7 +2,6 @@ package com.bytro.firefly;
 
 import com.bytro.firefly.rest.RestService;
 import com.bytro.firefly.stream.StreamService;
-import com.bytro.firefly.stream.StreamServiceImpl;
 import org.apache.kafka.streams.KafkaStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +19,7 @@ public class Launcher {
     private RestService restService;
 
     public Launcher() {
-        this(new StreamServiceImpl(), new RestService());
+        this(new StreamService(), new RestService());
     }
 
     public Launcher(StreamService streamService, RestService restService) {
@@ -54,7 +53,7 @@ public class Launcher {
 
     private void addShutdownHooks() {
         Runtime.getRuntime()
-               .addShutdownHook(new Thread(this::shutdown));
+                .addShutdownHook(new Thread(this::shutdown));
     }
 
     private void shutdown() {

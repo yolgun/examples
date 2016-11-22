@@ -1,7 +1,7 @@
 package com.bytro.firefly.rest;
 
-import com.bytro.firefly.avro.ScoreValue;
 import com.bytro.firefly.avro.User;
+import com.bytro.firefly.avro.Value;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- *  A simple REST proxy that runs embedded. This is used to
- *  locate and query the State Stores within a Kafka Streams Application.
+ * A simple REST proxy that runs embedded. This is used to
+ * locate and query the State Stores within a Kafka Streams Application.
  */
 @Path("state")
 public class RestService {
@@ -45,33 +45,35 @@ public class RestService {
 
     /**
      * Get a key-value pair from a KeyValue Store
-     * @param storeName   the store to look in
-     * @param key         the key to get
+     *
+     * @param storeName the store to look in
+     * @param key       the key to get
      * @return {@link KeyValueBean} representing the key-value pair
      */
     @GET
     @Path("/keyvalue/{storeName}/{key}")
     @Produces(MediaType.APPLICATION_JSON)
     public Tuple2<Integer, Integer> byKey(@PathParam("storeName") final String storeName,
-                              @PathParam("key") final int key) {
+                                          @PathParam("key") final int key) {
 
         // Lookup the KeyValueStore with the provided storeName
-        final ReadOnlyKeyValueStore<User, ScoreValue> store = stream.store(storeName, QueryableStoreTypes.<User, ScoreValue>keyValueStore());
+        final ReadOnlyKeyValueStore<User, Value> store = stream.store(storeName, QueryableStoreTypes.<User, Value>keyValueStore());
         if (store == null) {
             throw new NotFoundException();
         }
 
         // Get the value from the store
-        final ScoreValue value = store.get(new User(key));
+        final Value value = store.get(new User(key));
         if (value == null) {
             throw new NotFoundException();
         }
-        return new Tuple2<Integer, Integer>(key, value.getValue());
+        return new Tuple2<>(key, value.getValue());
     }
 
     /**
      * Get all of the key-value pairs available in a store
-     * @param storeName   store to query
+     *
+     * @param storeName store to query
      * @return A List of {@link KeyValueBean}s representing all of the key-values in the provided
      * store
      */
@@ -85,8 +87,9 @@ public class RestService {
     /**
      * Performs a range query on a KeyValue Store and converts the results into a List of
      * {@link KeyValueBean}
-     * @param storeName       The store to query
-     * @param rangeFunction   The range query to run, i.e., all, from(start, end)
+     *
+     * @param storeName     The store to query
+     * @param rangeFunction The range query to run, i.e., all, from(start, end)
      * @return List of {@link KeyValueBean}
      */
     private List<KeyValueBean> rangeForKeyValueStore(final String storeName,
@@ -114,9 +117,10 @@ public class RestService {
 
     /**
      * Get all of the key-value pairs that have keys within the range from...to
-     * @param storeName   store to query
-     * @param from        start of the range (inclusive)
-     * @param to          end of the range (inclusive)
+     *
+     * @param storeName store to query
+     * @param from      start of the range (inclusive)
+     * @param to        end of the range (inclusive)
      * @return A List of {@link KeyValueBean}s representing all of the key-values in the provided
      * store that fall withing the given range.
      */
@@ -132,10 +136,11 @@ public class RestService {
     /**
      * Query a window store for key-value pairs representing the value for a provided key within a
      * range of windows
-     * @param storeName   store to query
-     * @param key         key to look for
-     * @param from        time of earliest window to query
-     * @param to          time of latest window to query
+     *
+     * @param storeName store to query
+     * @param key       key to look for
+     * @param from      time of earliest window to query
+     * @param to        time of latest window to query
      * @return A List of {@link KeyValueBean}s representing the key-values for the provided key
      * across the provided window range.
      */
@@ -168,6 +173,7 @@ public class RestService {
 
     /**
      * Get the metadata for all of the instances of this Kafka Streams application
+     *
      * @return List of {@link HostStoreInfo}
      */
     @GET()
@@ -180,7 +186,8 @@ public class RestService {
     /**
      * Get the metadata for all instances of this Kafka Streams application that currently
      * has the provided store.
-     * @param store   The store to locate
+     *
+     * @param store The store to locate
      * @return List of {@link HostStoreInfo}
      */
     @GET()
@@ -193,8 +200,9 @@ public class RestService {
     /**
      * Find the metadata for the instance of this Kafka Streams Application that has the given
      * store and would have the given key if it exists.
-     * @param store   Store to find
-     * @param key     The key to find
+     *
+     * @param store Store to find
+     * @param key   The key to find
      * @return {@link HostStoreInfo}
      */
     @GET()
@@ -207,8 +215,8 @@ public class RestService {
 
     /**
      * Start an embedded Jetty Server on the given port
-     * @param port    port to run the Server on
-     * @throws Exception
+     *
+     * @param port port to run the Server on
      */
     public void start(KafkaStreams stream, final int port) {
         this.stream = stream;
@@ -241,7 +249,6 @@ public class RestService {
 
     /**
      * Stop the Jetty Server
-     * @throws Exception
      */
     public void stop() {
         try {

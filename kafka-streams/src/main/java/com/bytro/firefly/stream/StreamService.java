@@ -1,16 +1,11 @@
 package com.bytro.firefly.stream;
 
-import com.bytro.firefly.avro.Award;
-import com.bytro.firefly.avro.ScoreValue;
-import com.bytro.firefly.avro.User;
 import io.confluent.examples.streams.utils.SpecificAvroSerde;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.streams.KafkaStreams;
-import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.processor.TopologyBuilder;
 
-import java.util.Collections;
 import java.util.Properties;
 
 /**
@@ -93,20 +88,14 @@ import java.util.Properties;
  * 6) Once you're done with your experiments, you can stop this example via {@code Ctrl-C}. If needed,
  * also stop the Kafka broker ({@code Ctrl-C}), and only then stop the ZooKeeper instance (`{@code Ctrl-C}).
  */
-public abstract class StreamService {
+public class StreamService {
 
     private KafkaStreams streams;
 
-    static <K1, V1> Iterable<KeyValue<K1, V1>> awardTo(User key, ScoreValue value) {
-        return value.getValue() < 1000
-                ? Collections.emptyList()
-                : Collections.singletonList(new KeyValue(key, new Award(">1000 AWARD")));
-    }
-
     public void start() {
         Properties streamConfiguration = createProperties();
-        TopologyBuilder builder = createBuilder();
-        startStreaming(builder, streamConfiguration);
+        TopologyBuilder plan = PlanBuilder.prepare();
+        startStreaming(plan, streamConfiguration);
     }
 
     private Properties createProperties() {
@@ -114,7 +103,7 @@ public abstract class StreamService {
         final String HOSTNAME = "192.168.33.10";
         // Give the Streams application a unique name.  The name must be unique in the Kafka cluster
         // against which the application is run.
-        streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "firefly3");
+        streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "firefly4");
         streamsConfiguration.put(StreamsConfig.CLIENT_ID_CONFIG, "1");
         // Where to find Kafka broker(s).
         streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, HOSTNAME + ":9092");
@@ -133,10 +122,8 @@ public abstract class StreamService {
         return streamsConfiguration;
     }
 
-    protected abstract TopologyBuilder createBuilder();
-
-    private void startStreaming(TopologyBuilder builder, Properties streamsConfiguration) {
-        streams = new KafkaStreams(builder, streamsConfiguration);
+    private void startStreaming(TopologyBuilder plan, Properties streamsConfiguration) {
+        streams = new KafkaStreams(plan, streamsConfiguration);
         streams.start();
     }
 

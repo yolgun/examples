@@ -13,14 +13,12 @@
  */
 package com.bytro.firefly.rest;
 
-import io.confluent.examples.streams.interactivequeries.WordCountInteractiveQueriesRestService;
-
 import java.util.Objects;
 import java.util.Set;
 
 /**
  * A simple bean that can be JSON serialized via Jersey. Represents a KafkaStreams instance
- * that has a set of state stores. See {@link WordCountInteractiveQueriesRestService} for how it is used.
+ * that has a set of state stores. See {@link } for how it is used.
  *
  * We use this JavaBean based approach as it fits nicely with JSON serialization provided by
  * jax-rs/jersey

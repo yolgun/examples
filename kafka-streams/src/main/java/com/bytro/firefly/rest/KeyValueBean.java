@@ -13,13 +13,11 @@
  */
 package com.bytro.firefly.rest;
 
-import io.confluent.examples.streams.interactivequeries.WordCountInteractiveQueriesRestService;
-
 import java.util.Objects;
 
 /**
- * A simple bean used by {@link WordCountInteractiveQueriesRestService} when responding to
- * {@link WordCountInteractiveQueriesRestService#byKey(String, String)}.
+ * A simple bean used by {@link } when responding to
+ * {@link (String, String)}.
  *
  * We use this JavaBean based approach as it fits nicely with JSON serialization provided by
  * jax-rs/jersey
