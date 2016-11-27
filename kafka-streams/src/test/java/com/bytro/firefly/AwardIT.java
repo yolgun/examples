@@ -46,7 +46,7 @@ public class AwardIT {
         IntStream.range(0, USER_COUNT).forEach(userID ->
                 IntStream.range(0, GAME_COUNT).forEach(gameID ->
                         IntStream.range(0, SCORE_COUNT).mapToObj(i -> "score-" + i).forEach(scoreID ->
-                                IntStream.range(0, userID).forEach( eventID ->
+                                IntStream.range(0, userID + 1).forEach( eventID ->
                                         sendMessage(producer, userID, gameID, scoreID)
                                 )
                         )

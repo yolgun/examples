@@ -94,7 +94,7 @@ public class StreamService {
 
     public void start() {
         Properties streamConfiguration = createProperties();
-        TopologyBuilder plan = PlanBuilder.prepare();
+        TopologyBuilder plan = PlanBuilder_v2.prepare();
         startStreaming(plan, streamConfiguration);
     }
 
