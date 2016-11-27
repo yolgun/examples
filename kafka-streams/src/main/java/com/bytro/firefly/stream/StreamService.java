@@ -103,7 +103,7 @@ public class StreamService {
         final String HOSTNAME = "192.168.101.10";
         // Give the Streams application a unique name.  The name must be unique in the Kafka cluster
         // against which the application is run.
-        streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "firefly4");
+        streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "firefly8");
         streamsConfiguration.put(StreamsConfig.CLIENT_ID_CONFIG, "1");
         // Where to find Kafka broker(s).
         streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, HOSTNAME + ":9092");
@@ -124,6 +124,7 @@ public class StreamService {
 
     private void startStreaming(TopologyBuilder plan, Properties streamsConfiguration) {
         streams = new KafkaStreams(plan, streamsConfiguration);
+        streams.cleanUp();
         streams.start();
     }
 

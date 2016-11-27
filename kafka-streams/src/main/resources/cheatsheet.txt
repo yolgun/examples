@@ -1,12 +1,13 @@
 sudo nohup zookeeper-server-start /etc/kafka/zookeeper.properties >zookeeper.log 2>&1 &
 sudo nohup kafka-server-start /etc/kafka/server.properties >kafka.log 2>&1 &
 sudo nohup schema-registry-start /etc/schema-registry/schema-registry.properties >schema.log 2>&1 &
+sudo nohup redis-server /home/ubuntu/redis-stable/redis.conf >redis.log 2>&1 &
 
 sudo kafka-server-stop
 sudo zookeeper-server-stop
 sudo schema-registry-stop
 
-kafka-avro-console-producer --broker-list localhost:9092 --topic read \
+sudo kafka-avro-console-producer --broker-list localhost:9092 --topic read \
 	--property parse.key=true \
     --property key.separator=, \
 	--property key.schema='{"type":"record","name":"User","namespace":"com.bytro.firefly.avro","fields":[{"name":"userID","type":"int"}]}' \
@@ -31,7 +32,7 @@ kafka-avro-console-consumer --bootstrap-server localhost:9092 --topic read \
 	--property key.separator=, \
 	--from-beginning
 
-kafka-streams-application-reset --application-id firefly2 \
+sudo kafka-streams-application-reset --application-id firefly8 \
                                       --input-topics read \
 									  --intermediate-topics userScoreAcc,userGameScoreAcc,UserAcc \
                                       --bootstrap-servers 192.168.101.10:9092 \
