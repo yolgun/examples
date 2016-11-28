@@ -27,6 +27,7 @@ import static com.bytro.firefly.data.AvroUtils.toUserScoreWithValue;
 public class PlanBuilder_v2 {
     public static final String FROM_GAME_SERVERS = "firefly8-read";
     public static final String USER_SCORE_STORE = "userScoreAcc";
+    public static final String USER_AWARD_STORE = "userAwardStore";
     public static final String USER_GAME_SCORE_STORE = "userGameScoreAcc";
     public static final String USER_STORE = "UserAcc";
     public static final String TO_KAFKA_RANKS = "firefly8-UserRanking_v2";
@@ -46,7 +47,14 @@ public class PlanBuilder_v2 {
         SpecificAvroSerde serdeValue = new SpecificAvroSerde();
         serdeValue.configure(props, false);
 
-        StateStoreSupplier awardsStore = Stores.create("awardsStore")
+        StateStoreSupplier userScoreStore = Stores.create(USER_SCORE_STORE)
+                .withKeys(serdeKey)
+                .withValues(serdeValue)
+                .persistent()
+                .enableCaching()
+                .build();
+
+        StateStoreSupplier userAwardStore = Stores.create(USER_AWARD_STORE)
                 .withKeys(serdeKey)
                 .withValues(serdeValue)
                 .persistent()
@@ -55,7 +63,8 @@ public class PlanBuilder_v2 {
 
         build.addSource("source", FROM_GAME_SERVERS)
                 .addProcessor("awarder", Awarder::new, "source")
-                .addStateStore(awardsStore, "awarder")
+                .addStateStore(userScoreStore, "awarder")
+                .addStateStore(userAwardStore, "awarder")
                 .addProcessor("printer", Printer::new, "awarder");
 
         return build;
