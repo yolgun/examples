@@ -15,11 +15,11 @@ import static com.bytro.firefly.data.AvroUtils.*;
  * Created by yoldeta on 2016-11-22.
  */
 public class PlanBuilder {
-    public static final String FROM_GAME_SERVERS = "firefly8-read";
+    public static final String FROM_GAME_SERVERS = "firefly10-read";
     public static final String USER_SCORE_STORE = "userScoreAcc";
     public static final String USER_GAME_SCORE_STORE = "userGameScoreAcc";
     public static final String USER_STORE = "UserAcc";
-    public static final String TO_KAFKA_RANKS = "firefly8-UserRanking_v2";
+    public static final String TO_KAFKA_RANKS = "firefly10-UserRanking_v2";
 
     private PlanBuilder() {
     }

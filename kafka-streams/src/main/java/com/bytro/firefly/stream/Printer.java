@@ -19,7 +19,7 @@ public class Printer implements Processor<UserScore,Value> {
 
     @Override
     public void process(UserScore key, Value value) {
-        System.out.println(key + " -> "+ value);
+        System.out.println(Thread.currentThread().getName() + ": " + key + " -> "+ value);
     }
 
     @Override

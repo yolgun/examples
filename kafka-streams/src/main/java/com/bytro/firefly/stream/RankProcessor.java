@@ -20,7 +20,7 @@ public class RankProcessor implements Processor<User, Value> {
 
     @Override
     public void init(ProcessorContext context) {
-        ranks = RedisFactory.getInstance().getScoredSortedSet("firefly8-ranks");
+        ranks = RedisFactory.getInstance().getScoredSortedSet("firefly10-ranks");
     }
 
     @Override

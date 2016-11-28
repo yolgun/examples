@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
  * Created by yoldeta on 2016-11-20.
  */
 public class Launcher {
-    private static final int REST_PORT = 8082;
+    private static final int REST_PORT = 8083;
     private static final Logger logger = LoggerFactory.getLogger(Launcher.class);
 
     private StreamService streamService;

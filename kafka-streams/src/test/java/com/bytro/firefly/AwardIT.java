@@ -6,7 +6,9 @@ import io.confluent.examples.streams.utils.SpecificAvroSerializer;
 import org.apache.kafka.clients.producer.*;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
@@ -18,7 +20,7 @@ public class AwardIT {
     private static final int GAME_COUNT = 10;
     private static final int SCORE_COUNT = 10;
     private static final int EVENT_COUNT = 10;
-    private static final String INTPUT_TOPIC = "firefly8-read";
+    private static final String INTPUT_TOPIC = "firefly10-read";
 
     public KafkaProducer<User,UserGameScoreValue> givenProducer() {
         Properties producerConfig = new Properties();
@@ -38,15 +40,23 @@ public class AwardIT {
     }
 
     private void whenSendMessages(KafkaProducer<User, UserGameScoreValue> producer) {
+        ArrayList<Future> futures = new ArrayList<>();
         IntStream.range(0, USER_COUNT).forEach(userID ->
                 IntStream.range(0, GAME_COUNT).forEach(gameID ->
                         IntStream.range(0, SCORE_COUNT).mapToObj(i -> "score-" + i).forEach(scoreID ->
                                 IntStream.range(0, userID + 1).forEach( eventID ->
-                                        sendMessage(producer, userID, gameID, scoreID)
+                                        futures.add(sendMessage(producer, userID, gameID, scoreID))
                                 )
                         )
                 )
         );
+        futures.forEach(f -> {
+            try {
+                f.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private Future sendMessage(KafkaProducer<User, UserGameScoreValue> producer, int userID, int gameID, String scoreID) {

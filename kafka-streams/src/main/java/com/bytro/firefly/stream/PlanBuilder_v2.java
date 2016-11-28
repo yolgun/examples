@@ -19,18 +19,19 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import static com.bytro.firefly.data.AvroUtils.addValues;
+import static com.bytro.firefly.data.AvroUtils.toUserGameScoreWithValue;
 import static com.bytro.firefly.data.AvroUtils.toUserScoreWithValue;
 
 /**
  * Created by yoldeta on 2016-11-22.
  */
 public class PlanBuilder_v2 {
-    public static final String FROM_GAME_SERVERS = "firefly8-read";
+    public static final String FROM_GAME_SERVERS = "firefly10-read";
     public static final String USER_SCORE_STORE = "userScoreAcc";
     public static final String USER_AWARD_STORE = "userAwardStore";
     public static final String USER_GAME_SCORE_STORE = "userGameScoreAcc";
     public static final String USER_STORE = "UserAcc";
-    public static final String TO_KAFKA_RANKS = "firefly8-UserRanking_v2";
+    public static final String TO_KAFKA_RANKS = "firefly10-UserRanking_v2";
 
     private PlanBuilder_v2() {
     }
@@ -65,8 +66,9 @@ public class PlanBuilder_v2 {
                 .addProcessor("awarder", Awarder::new, "source")
                 .addStateStore(userScoreStore, "awarder")
                 .addStateStore(userAwardStore, "awarder")
-                .addProcessor("printer", Printer::new, "awarder");
-
+                .addProcessor("printer", Printer::new, "awarder")
+                .addSink("userScoreSink","firefly10-userScore","awarder")
+                .addSink("userAwardSink","firefly10-userAward","awarder");
         return build;
     }
 }

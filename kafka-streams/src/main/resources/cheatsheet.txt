@@ -7,7 +7,7 @@ sudo kafka-server-stop
 sudo zookeeper-server-stop
 sudo schema-registry-stop
 
-sudo kafka-avro-console-producer --broker-list localhost:9092 --topic firefly8-read \
+sudo kafka-avro-console-producer --broker-list localhost:9092 --topic firefly10-read \
 	--property parse.key=true \
     --property key.separator=, \
 	--property key.schema='{"type":"record","name":"User","namespace":"com.bytro.firefly.avro","fields":[{"name":"userID","type":"int"}]}' \
@@ -32,13 +32,32 @@ kafka-avro-console-consumer --bootstrap-server localhost:9092 --topic read \
 	--property key.separator=, \
 	--from-beginning
 
-sudo kafka-streams-application-reset --application-id firefly8 \
+sudo kafka-avro-console-consumer --bootstrap-server localhost:9092 --topic firefly10-userScore \
+	--property key.schema='{"type" : "record","name" : "UserScore","namespace" : "com.bytro.firefly.avro","fields" : [ {"name" : "userID","type" : "int"}, {"name" : "scoreType","type" : "string"} ],"doc:" : "A basic schema for storing user-score"}' \
+	--property value.schema='{"type" : "record","name" : "Value","namespace" : "com.bytro.firefly.avro","fields" : [{"name" : "value","type" : "int"} ],"doc:" : "A basic schema for storing user-score"}' \
+	--property print.key=true \
+	--property key.separator=, \
+	--from-beginning
+
+sudo kafka-avro-console-consumer --bootstrap-server localhost:9092 --topic firefly10-userAward \
+	--property key.schema='{"type" : "record","name" : "UserAward","namespace" : "com.bytro.firefly.avro","fields" : [ {"name" : "userID","type" : "int"}, {"name" : "awardID","type" : "int"} ],"doc:" : "A basic schema for storing user-award values"}' \
+	--property value.schema='{"type" : "record","name" : "AwardResult","namespace" : "com.bytro.firefly.avro","fields" : [{"name" : "awardResult","type" : "double"} ],"doc:" : "A basic schema for storing user-game-score values"}' \
+	--property print.key=true \
+	--property key.separator=, \
+	--from-beginning
+
+
+sudo kafka-streams-application-reset --application-id firefly10 \
                                       --input-topics read \
-									  --intermediate-topics userScoreAcc,userGameScoreAcc,UserAcc \
                                       --bootstrap-servers 192.168.101.10:9092 \
                                       --zookeeper 192.168.101.10:2181
 
-sudo kafka-streams-application-reset --application-id firefly8 \
+sudo kafka-topics --delete --topic firefly10-userScore --zookeeper 192.168.101.10:2181
+sudo kafka-topics --delete --topic firefly10-userAward --zookeeper 192.168.101.10:2181
+sudo kafka-topics --delete --topic firefly10-read --zookeeper 192.168.101.10:2181
+sudo kafka-topics --create --zookeeper 192.168.101.10:2181 --replication-factor 1 --partitions 100 --topic firefly10-read
+
+sudo kafka-streams-application-reset --application-id firefly10 \
 									  --intermediate-topics userScoreAcc,userGameScoreAcc,UserAcc \
                                       --bootstrap-servers 192.168.101.10:9092 \
                                       --zookeeper 192.168.101.10:2181

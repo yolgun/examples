@@ -1,11 +1,16 @@
 package com.bytro.firefly.stream;
 
-import com.bytro.firefly.avro.*;
-import org.apache.kafka.streams.KeyValue;
-import org.apache.kafka.streams.processor.*;
-import org.apache.kafka.streams.state.KeyValueStore;
-
 import java.util.Optional;
+
+import com.bytro.firefly.avro.AwardResult;
+import com.bytro.firefly.avro.User;
+import com.bytro.firefly.avro.UserAward;
+import com.bytro.firefly.avro.UserGameScoreValue;
+import com.bytro.firefly.avro.UserScore;
+import com.bytro.firefly.avro.Value;
+import org.apache.kafka.streams.processor.Processor;
+import org.apache.kafka.streams.processor.ProcessorContext;
+import org.apache.kafka.streams.state.KeyValueStore;
 
 
 /**
@@ -32,20 +37,26 @@ public class Awarder implements Processor<User,UserGameScoreValue> {
         Value oldValue = userScoreStore.get(key);
         Value newValue = oldValue == null ? value : new Value(oldValue.getValue() + value.getValue());
         userScoreStore.put(key, newValue);
+        checkAwards(key, newValue);
+        context.forward(key, newValue, "userScoreSink");
+        context.forward(key, newValue, "printer");
+    }
+
+    private void checkAwards(UserScore key, Value newValue) {
         for (AwardChecker checker : awardContainer) {
             UserAward userAward = new UserAward(key.getUserID(), checker.getID());
             Optional<AwardResult> awardResult = Optional.ofNullable(userAwardStore.get(userAward));
             if (!awardResult.isPresent() || !awardResult.get().getAwardResult().equals(1.0)) {
-                Optional<KeyValue<UserAward, AwardResult>> result = checker.getResult(key, newValue);
-                result.ifPresent(result1 -> {
-                    userAwardStore.put(result1.key, result1.value);
-                    if (result1.value.getAwardResult().equals(1.0)) {
-                        System.err.println("-----AWARD:" + result1);
-                    }
-                });
+                checker.getResult(key, newValue)
+                       .ifPresent(result1 -> {
+                           userAwardStore.put(result1.key, result1.value);
+                           if (result1.value.getAwardResult().equals(1.0)) {
+                               System.err.println("-----AWARD:" + result1);
+                               context.forward(result1.key, result1.value, "userAwardSink");
+                           }
+                       });
             }
         }
-        context.forward(key, newValue);
     }
 
     @Override

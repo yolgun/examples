@@ -103,8 +103,8 @@ public class StreamService {
         final String HOSTNAME = "192.168.101.10";
         // Give the Streams application a unique name.  The name must be unique in the Kafka cluster
         // against which the application is run.
-        streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "firefly8");
-        streamsConfiguration.put(StreamsConfig.CLIENT_ID_CONFIG, "1");
+        streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "firefly10");
+        streamsConfiguration.put(StreamsConfig.CLIENT_ID_CONFIG, "2");
         // Where to find Kafka broker(s).
         streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, HOSTNAME + ":9092");
         // Where to find the corresponding ZooKeeper ensemble.
@@ -115,6 +115,7 @@ public class StreamService {
 
         // Records should be flushed every 10 seconds. This is less than the default
         // in order to keep this example interactive.
+        streamsConfiguration.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, 8);
         streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 10 * 1000);
         streamsConfiguration.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
