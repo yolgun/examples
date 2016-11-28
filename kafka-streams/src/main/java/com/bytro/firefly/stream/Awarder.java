@@ -33,13 +33,17 @@ public class Awarder implements Processor<User,UserGameScoreValue> {
         Value newValue = oldValue == null ? value : new Value(oldValue.getValue() + value.getValue());
         userScoreStore.put(key, newValue);
         for (AwardChecker checker : awardContainer) {
-            Optional<KeyValue<UserAward, AwardResult>> result = checker.getResult(key, newValue);
-            result.ifPresent(result1 -> {
-                userAwardStore.put(result1.key, result1.value);
-                if (result1.value.getAwardResult().equals(1.0)) {
-                    System.err.println("-----AWARD:" + result1);
-                }
-            });
+            UserAward userAward = new UserAward(key.getUserID(), checker.getID());
+            Optional<AwardResult> awardResult = Optional.ofNullable(userAwardStore.get(userAward));
+            if (!awardResult.isPresent() || !awardResult.get().getAwardResult().equals(1.0)) {
+                Optional<KeyValue<UserAward, AwardResult>> result = checker.getResult(key, newValue);
+                result.ifPresent(result1 -> {
+                    userAwardStore.put(result1.key, result1.value);
+                    if (result1.value.getAwardResult().equals(1.0)) {
+                        System.err.println("-----AWARD:" + result1);
+                    }
+                });
+            }
         }
         context.forward(key, newValue);
     }

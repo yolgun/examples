@@ -46,4 +46,8 @@ public class AwardChecker {
         }
         return Optional.empty();
     }
+
+    public Integer getID() {
+        return id;
+    }
 }
