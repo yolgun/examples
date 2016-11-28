@@ -1,7 +1,9 @@
 package com.bytro.firefly.rest;
 
 import com.bytro.firefly.avro.User;
+import com.bytro.firefly.avro.UserScore;
 import com.bytro.firefly.avro.Value;
+import com.bytro.firefly.stream.PlanBuilder_v2;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
@@ -25,6 +27,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -41,6 +44,60 @@ public class RestService {
     @GET()
     public String root() {
         return "{\"message\": \"hello\"}";
+    }
+
+    /**
+     * Get a key-value pair from a KeyValue Store
+     *
+     * @param storeName the store to look in
+     * @param key       the key to get
+     * @return {@link KeyValueBean} representing the key-value pair
+     */
+    @GET
+    @Path("/userscore/{userID}/{scoreType}")
+    public String byUserScore(@PathParam("userID") final int userID,
+                                          @PathParam("scoreType") final String scoreType) {
+
+        // Lookup the KeyValueStore with the provided storeName
+        final ReadOnlyKeyValueStore<UserScore, Value> store =
+                stream.store(PlanBuilder_v2.USER_SCORE_STORE, QueryableStoreTypes.keyValueStore());
+        if (store == null) {
+            throw new NotFoundException();
+        }
+
+        // Get the value from the store
+        final Value value = store.get(new UserScore(userID, scoreType));
+        if (value == null) {
+            throw new NotFoundException();
+        }
+        return "" + value.getValue();
+    }
+
+    /**
+     * Get a key-value pair from a KeyValue Store
+     *
+     * @param storeName the store to look in
+     * @param key       the key to get
+     * @return {@link KeyValueBean} representing the key-value pair
+     */
+    @GET
+    @Path("/userscore/{userID}")
+    public String byUserAllScores(@PathParam("userID") final int userID) {
+
+        // Lookup the KeyValueStore with the provided storeName
+        final ReadOnlyKeyValueStore<UserScore, Value> store =
+                stream.store(PlanBuilder_v2.USER_SCORE_STORE, QueryableStoreTypes.keyValueStore());
+        if (store == null) {
+            throw new NotFoundException();
+        }
+
+        // Get the value from the store
+        KeyValueIterator<UserScore, Value> range = store.range(new UserScore(userID, "score-" + 0), new UserScore(userID + 1, "score-" + 0));
+        ArrayList<KeyValue> result = new ArrayList<>();
+        for (KeyValue kv = range.next() ; range.hasNext();) {
+             result.add(kv);
+        }
+        return "" + result;
     }
 
     /**

@@ -2,13 +2,8 @@ package com.bytro.firefly;
 
 import com.bytro.firefly.avro.User;
 import com.bytro.firefly.avro.UserGameScoreValue;
-import io.confluent.examples.streams.utils.SpecificAvroSerde;
 import io.confluent.examples.streams.utils.SpecificAvroSerializer;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.serialization.StringSerializer;
+import org.apache.kafka.clients.producer.*;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -54,7 +49,7 @@ public class AwardIT {
         );
     }
 
-    private Future<RecordMetadata> sendMessage(KafkaProducer<User, UserGameScoreValue> producer, int userID, int gameID, String scoreID) {
+    private Future sendMessage(KafkaProducer<User, UserGameScoreValue> producer, int userID, int gameID, String scoreID) {
         ProducerRecord record = new ProducerRecord<>(
                 INTPUT_TOPIC,
                 new User(userID),
@@ -62,6 +57,13 @@ public class AwardIT {
         );
         System.out.println(record);
 //        return null;
-        return producer.send(record);
+        return producer.send(record, new Callback() {
+            @Override
+            public void onCompletion(RecordMetadata metadata, Exception exception) {
+                if (exception != null) {
+                    System.err.println(exception.getMessage());
+                }
+            }
+        });
     }
 }
