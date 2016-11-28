@@ -36,6 +36,7 @@ public class PlanBuilder {
         userGameScoreValues.map(toUserScoreWithValue)
                 .groupByKey()
                 .reduce(addValues, USER_SCORE_STORE)
+
 //                .toStream()
 //                .flatMap(awardManager)
                 .print();

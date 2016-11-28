@@ -104,7 +104,7 @@ public class StreamService {
         // Give the Streams application a unique name.  The name must be unique in the Kafka cluster
         // against which the application is run.
         streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "firefly10");
-        streamsConfiguration.put(StreamsConfig.CLIENT_ID_CONFIG, "2");
+        streamsConfiguration.put(StreamsConfig.CLIENT_ID_CONFIG, "1");
         // Where to find Kafka broker(s).
         streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, HOSTNAME + ":9092");
         // Where to find the corresponding ZooKeeper ensemble.

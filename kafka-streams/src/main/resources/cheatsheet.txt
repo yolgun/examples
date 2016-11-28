@@ -65,3 +65,5 @@ sudo kafka-streams-application-reset --application-id firefly10 \
 sudo connect-standalone worker.properties connect.properties
 sudo connect-standalone worker.properties connect-redis.properties
 
+
+docker run -d --name mygraphite --restart=always -p 8383:80 -p 2003-2004:2003-2004 -p 2023-2024:2023-2024 -p 8125:8125/udp -p 8126:8126 hopsoft/graphite-statsd
