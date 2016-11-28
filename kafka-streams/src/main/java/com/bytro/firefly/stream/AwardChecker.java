@@ -42,7 +42,7 @@ public class AwardChecker {
         if (oldKey.getScoreType().equals(field)) {
             return Optional.of(KeyValue.pair(
                     new UserAward(oldKey.getUserID(), id),
-                    new AwardResult(Math.max(1.0, oldValue.getValue() * 1.0 / goal ))));
+                    new AwardResult(Math.min(1.0, oldValue.getValue() * 1.0 / goal ))));
         }
         return Optional.empty();
     }

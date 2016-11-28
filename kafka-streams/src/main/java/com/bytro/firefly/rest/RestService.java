@@ -1,8 +1,6 @@
 package com.bytro.firefly.rest;
 
-import com.bytro.firefly.avro.User;
-import com.bytro.firefly.avro.UserScore;
-import com.bytro.firefly.avro.Value;
+import com.bytro.firefly.avro.*;
 import com.bytro.firefly.stream.PlanBuilder_v2;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.KafkaStreams;
@@ -92,10 +90,41 @@ public class RestService {
         }
 
         // Get the value from the store
-        KeyValueIterator<UserScore, Value> range = store.range(new UserScore(userID, "score-" + 0), new UserScore(userID + 1, "score-" + 0));
+        KeyValueIterator<UserScore, Value> range = store.range(new UserScore(userID, "score-" + 0), new UserScore(userID, "score-" + 10));
         ArrayList<KeyValue> result = new ArrayList<>();
-        for (KeyValue kv = range.next() ; range.hasNext();) {
-             result.add(kv);
+        if (range.hasNext()) {
+            for (KeyValue kv = range.next(); range.hasNext(); kv = range.next()) {
+                result.add(kv);
+            }
+        }
+        return "" + result;
+    }
+
+    /**
+     * Get a key-value pair from a KeyValue Store
+     *
+     * @param storeName the store to look in
+     * @param key       the key to get
+     * @return {@link KeyValueBean} representing the key-value pair
+     */
+    @GET
+    @Path("/useraward/{userID}")
+    public String byUserAllAwards(@PathParam("userID") final int userID) {
+
+        // Lookup the KeyValueStore with the provided storeName
+        final ReadOnlyKeyValueStore<UserAward, AwardResult> store =
+                stream.store(PlanBuilder_v2.USER_AWARD_STORE, QueryableStoreTypes.keyValueStore());
+        if (store == null) {
+            throw new NotFoundException();
+        }
+
+        // Get the value from the store
+        KeyValueIterator<UserAward, AwardResult> range = store.range(new UserAward(userID, 0), new UserAward(userID, 30));
+        ArrayList<KeyValue> result = new ArrayList<>();
+        if (range.hasNext()) {
+            for (KeyValue kv = range.next(); range.hasNext(); kv = range.next()) {
+                result.add(kv);
+            }
         }
         return "" + result;
     }
