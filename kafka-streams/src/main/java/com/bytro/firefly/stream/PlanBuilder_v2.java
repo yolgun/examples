@@ -24,26 +24,13 @@ public class PlanBuilder_v2 {
 
         HashMap<String,String> props = new HashMap<>();
         props.put("schema.registry.url", "http://192.168.101.10:8081");
-
         SpecificAvroSerde serdeKey = new SpecificAvroSerde();
         serdeKey.configure(props, true);
-
         SpecificAvroSerde serdeValue = new SpecificAvroSerde();
         serdeValue.configure(props, false);
 
-        StateStoreSupplier userScoreStore = Stores.create(USER_SCORE_STORE)
-                .withKeys(serdeKey)
-                .withValues(serdeValue)
-                .persistent()
-                .enableCaching()
-                .build();
-
-        StateStoreSupplier userAwardStore = Stores.create(USER_AWARD_STORE)
-                .withKeys(serdeKey)
-                .withValues(serdeValue)
-                .persistent()
-                .enableCaching()
-                .build();
+        StateStoreSupplier userScoreStore = createStore(USER_SCORE_STORE, serdeKey, serdeValue);
+        StateStoreSupplier userAwardStore = createStore(USER_AWARD_STORE, serdeKey, serdeValue);
 
         build.addSource("source", FROM_GAME_SERVERS)
                 .addProcessor("lifetimeScoreKeeper", LifetimeScoreKeeper::new, "source")
@@ -54,5 +41,14 @@ public class PlanBuilder_v2 {
                 .addSink("userScoreSink", "firefly10-userScore", "lifetimeScoreKeeper")
                 .addSink("userAwardSink", "firefly10-userAward", "awardMapper");
         return build;
+    }
+
+    private static StateStoreSupplier createStore(String storeName, SpecificAvroSerde serdeKey, SpecificAvroSerde serdeValue) {
+        return Stores.create(storeName)
+                .withKeys(serdeKey)
+                .withValues(serdeValue)
+                .persistent()
+                .enableCaching()
+                .build();
     }
 }
