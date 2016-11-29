@@ -1,6 +1,7 @@
 package com.bytro.firefly.stream;
 
 import com.bytro.firefly.avro.*;
+import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueStore;
@@ -27,16 +28,21 @@ public class AwardMapper implements Processor<UserScore, Value > {
         for (AwardChecker checker : awardContainer) {
             UserAward userAward = new UserAward(key.getUserID(), checker.getID());
             Optional<AwardResult> awardResult = Optional.ofNullable(userAwardStore.get(userAward));
-            if (!awardResult.isPresent() || !awardResult.get().getAwardResult().equals(1.0)) {
-                checker.getResult(key, value)
-                        .ifPresent(result1 -> {
-                            userAwardStore.put(result1.key, result1.value);
-                            if (result1.value.getAwardResult().equals(1.0)) {
-                                System.err.println("-----AWARD:" + result1);
-                                context.forward(result1.key, result1.value, "userAwardSink");
-                            }
-                        });
-            }
+            handleAwardUpdateIf(key, value, checker, awardResult);
+        }
+    }
+
+    private void handleAwardUpdateIf(UserScore key, Value value, AwardChecker checker, Optional<AwardResult> awardResult) {
+        if (!awardResult.isPresent() || !awardResult.get().getAwardResult().equals(1.0)) {
+            checker.getResult(key, value).ifPresent(result1 -> handleAwardUpdate(result1));
+        }
+    }
+
+    private void handleAwardUpdate(KeyValue<UserAward, AwardResult> result) {
+        userAwardStore.put(result.key, result.value);
+        if (result.value.getAwardResult().equals(1.0)) {
+            System.err.println("-----AWARD:" + result);
+            context.forward(result.key, result.value, "userAwardSink");
         }
     }
 
