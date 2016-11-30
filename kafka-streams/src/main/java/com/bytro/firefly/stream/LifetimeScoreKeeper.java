@@ -1,10 +1,6 @@
 package com.bytro.firefly.stream;
 
-import java.util.Optional;
-
-import com.bytro.firefly.avro.AwardResult;
 import com.bytro.firefly.avro.User;
-import com.bytro.firefly.avro.UserAward;
 import com.bytro.firefly.avro.UserGameScoreValue;
 import com.bytro.firefly.avro.UserScore;
 import com.bytro.firefly.avro.Value;
@@ -31,9 +27,13 @@ public class LifetimeScoreKeeper implements Processor<User,UserGameScoreValue> {
         UserScore key = new UserScore(user.getUserID(), userGameScoreValue.getScoreType());
         Value value = new Value(userGameScoreValue.getScoreValue());
         Value oldValue = userScoreStore.get(key);
-        Value newValue = oldValue == null ? value : new Value(oldValue.getValue() + value.getValue());
-        userScoreStore.put(key, newValue);
-        context.forward(key, newValue);
+        Value sum = sumOf(oldValue, value);
+        userScoreStore.put(key, sum);
+        context.forward(key, sum);
+    }
+
+    private Value sumOf(Value oldValue, Value value) {
+        return oldValue == null ? value : new Value(oldValue.getValue() + value.getValue());
     }
 
     @Override
