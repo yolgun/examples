@@ -32,8 +32,11 @@ public class PlanBuilder_v2 {
         StateStoreSupplier userScoreStore = createStore(USER_SCORE_STORE, serdeKey, serdeValue);
         StateStoreSupplier userAwardStore = createStore(USER_AWARD_STORE, serdeKey, serdeValue);
 
+        MultiStringMapper multiStringMapper = createMultiStringMapper();
+
         build.addSource("source", FROM_GAME_SERVERS)
-                .addProcessor("lifetimeScoreKeeper", LifetimeScoreKeeper::new, "source")
+                .addProcessor("scoreFlatMapper", () -> new ScoreFlatMapper(multiStringMapper), "source")
+                .addProcessor("lifetimeScoreKeeper", LifetimeScoreKeeper::new, "scoreFlatMapper")
                     .addStateStore(userScoreStore, "lifetimeScoreKeeper")
                 .addProcessor("printer", Printer::new, "lifetimeScoreKeeper")
                 .addProcessor("awardMapper", AwardMapper::new, "lifetimeScoreKeeper")
@@ -41,6 +44,13 @@ public class PlanBuilder_v2 {
                 .addSink("userScoreSink", "firefly10-userScore", "lifetimeScoreKeeper")
                 .addSink("userAwardSink", "firefly10-userAward", "awardMapper");
         return build;
+    }
+
+    private static MultiStringMapper createMultiStringMapper() {
+        SingleStringMapper singleMapper = new SingleStringMapper(
+                "score-(\\d+)", "groupScore%s", UnitToGroupMapper.getInstance());
+
+        return new MultiStringMapper().addSingleMapper(singleMapper);
     }
 
     private static StateStoreSupplier createStore(String storeName, SpecificAvroSerde serdeKey, SpecificAvroSerde serdeValue) {

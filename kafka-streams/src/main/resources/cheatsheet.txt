@@ -55,7 +55,7 @@ sudo kafka-streams-application-reset --application-id firefly10 \
 sudo kafka-topics --delete --topic firefly10-userScore --zookeeper 192.168.101.10:2181
 sudo kafka-topics --delete --topic firefly10-userAward --zookeeper 192.168.101.10:2181
 sudo kafka-topics --delete --topic firefly10-read --zookeeper 192.168.101.10:2181
-sudo kafka-topics --create --zookeeper 192.168.101.10:2181 --replication-factor 1 --partitions 100 --topic firefly10-read
+sudo kafka-topics --create --zookeeper 192.168.101.10:2181 --replication-factor 1 --partitions 10 --topic firefly10-read
 
 sudo kafka-streams-application-reset --application-id firefly10 \
 									  --intermediate-topics userScoreAcc,userGameScoreAcc,UserAcc \

@@ -28,13 +28,9 @@ public class AwardMapper implements Processor<UserScore, Value > {
         for (AwardChecker checker : awardContainer) {
             UserAward userAward = new UserAward(key.getUserID(), checker.getID());
             Optional<AwardResult> awardResult = Optional.ofNullable(userAwardStore.get(userAward));
-            handleAwardUpdateIf(key, value, checker, awardResult);
-        }
-    }
-
-    private void handleAwardUpdateIf(UserScore key, Value value, AwardChecker checker, Optional<AwardResult> awardResult) {
-        if (!awardResult.isPresent() || !awardResult.get().getAwardResult().equals(1.0)) {
-            checker.getResult(key, value).ifPresent(result1 -> handleAwardUpdate(result1));
+            if (!awardResult.isPresent() || !awardResult.get().getAwardResult().equals(1.0)) {
+                checker.getResult(key, value).ifPresent(this::handleAwardUpdate);
+            }
         }
     }
 
